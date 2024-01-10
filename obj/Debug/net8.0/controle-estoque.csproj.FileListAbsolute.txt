@@ -32,3 +32,4 @@ C:\Users\Usuario\OneDrive\Documentos\controle-estoque\obj\Debug\net8.0\refint\co
 C:\Users\Usuario\OneDrive\Documentos\controle-estoque\obj\Debug\net8.0\controle-estoque.pdb
 C:\Users\Usuario\OneDrive\Documentos\controle-estoque\obj\Debug\net8.0\controle-estoque.genruntimeconfig.cache
 C:\Users\Usuario\OneDrive\Documentos\controle-estoque\obj\Debug\net8.0\ref\controle-estoque.dll
+C:\Users\Usuario\OneDrive\Documentos\controle-estoque\obj\Debug\net8.0\controle-estoque.sourcelink.json
