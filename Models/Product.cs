@@ -7,14 +7,15 @@ public class Product
     public String Name { get; set; }
     public bool Ingredient { get; set; }
     public int ValidityTime { get; set; }
-    //public DateOnly FabricationDate { get; set; }
+    public DateTime FabricationDate { get; set; }
 
-    public Product(int code, string name, bool ingredient, int validityTime)
+    public Product(Guid id, int code, string name, bool ingredient, int validityTime, DateTime fabricationDate)
     {
-        Id = new Guid();
+        Id = id;
         Code = code;
         Name = name;
         Ingredient = ingredient;
         ValidityTime = validityTime;
+        FabricationDate = fabricationDate;
     }
 }
