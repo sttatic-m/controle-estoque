@@ -1,3 +1,5 @@
+using controle_estoque.Models.Enum;
+
 namespace controle_estoque.Models;
 
 public class Product 
@@ -8,6 +10,7 @@ public class Product
     public bool Ingredient { get; set; }
     public int ValidityTime { get; set; }
     public DateTime FabricationDate { get; set; }
+    public MeasureType MeasureType { get; set; }
 
     public Product(Guid id, int code, string name, bool ingredient, int validityTime, DateTime fabricationDate)
     {

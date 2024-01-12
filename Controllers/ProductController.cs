@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using controle_estoque.Models;
 using controle_estoque.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace controle_estoque.Controllers;
 
@@ -23,6 +24,23 @@ public class ProductController : ControllerBase
         var productList = _context.Products.ToList();
         if (productList != null && productList.Any()) return Ok(productList);
         else return BadRequest("Failed");
+    }
+
+    [HttpGet("{code}", Name = "FindOneProduct")]
+    public ActionResult FindOneProduct(int code)
+    {
+        try
+        {
+            var product = _context.Products.FirstOrDefault(p => p.Code == code);
+
+            if (product != null) return Ok(product);
+
+            return NotFound($"Not Found Product with Code: {code}");
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
     }
 
     [HttpPost(Name = "AddProduct")]

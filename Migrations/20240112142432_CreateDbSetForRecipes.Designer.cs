@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using controle_estoque.Data;
 
@@ -10,9 +11,11 @@ using controle_estoque.Data;
 namespace controle_estoque.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240112142432_CreateDbSetForRecipes")]
+    partial class CreateDbSetForRecipes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.1");
@@ -23,18 +26,16 @@ namespace controle_estoque.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Quantity")
+                    b.Property<int>("ProductCode")
                         .HasColumnType("INTEGER");
+
+                    b.Property<double>("Quantity")
+                        .HasColumnType("REAL");
 
                     b.Property<Guid?>("RecipeId")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
 
                     b.HasIndex("RecipeId");
 
@@ -83,20 +84,16 @@ namespace controle_estoque.Migrations
                     b.Property<double>("AmountRecipes")
                         .HasColumnType("REAL");
 
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("ProductCode")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("ProductionDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("RecipeId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("RecipeCode")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("RecipeId");
 
                     b.ToTable("Productions");
                 });
@@ -114,36 +111,9 @@ namespace controle_estoque.Migrations
 
             modelBuilder.Entity("controle_estoque.Models.Ingredient", b =>
                 {
-                    b.HasOne("controle_estoque.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("controle_estoque.Models.Recipe", null)
                         .WithMany("Ingredients")
                         .HasForeignKey("RecipeId");
-
-                    b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("controle_estoque.Models.Production", b =>
-                {
-                    b.HasOne("controle_estoque.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("controle_estoque.Models.Recipe", "Recipe")
-                        .WithMany()
-                        .HasForeignKey("RecipeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("Recipe");
                 });
 
             modelBuilder.Entity("controle_estoque.Models.Recipe", b =>
