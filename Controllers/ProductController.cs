@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using controle_estoque.Models;
 using controle_estoque.Data;
-using Microsoft.EntityFrameworkCore;
-using System.Globalization;
 
 namespace controle_estoque.Controllers;
 
