@@ -37,16 +37,21 @@ public class ProductionController : ControllerBase
     {
         try
         {
-            DateTime date;
-            if(DateTime.TryParseExact(index, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out date))
+            if (DateTime.TryParseExact(index, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
             {
                 var productions = _context.Productions.Where(prod => prod.ProductionDate.Date == date.Date).ToList();
-                if(productions != null)
+                if (productions != null)
                 {
                     return Ok(productions);
                 }
 
                 throw new Exception("Not Found");
+            }
+
+            var productionsByProductCode = _context.Productions.Where(prod => prod.ProductCode == int.Parse(index)).ToList();
+            if(productionsByProductCode != null)
+            {
+                return Ok(productionsByProductCode);
             }
 
             throw new Exception("Not Found");
