@@ -72,8 +72,17 @@ public class ProductionController : ControllerBase
             if (lastProduction != null) prodCode = lastProduction.Code++;
 
             var newProduction = new Production(Guid.NewGuid(), prodCode, production.Amount, production.AmountRecipes, DateTime.Now, production.ProductCode, production.RecipeCode);
-
             _context.Productions.Add(newProduction);
+
+            var product = _context.Products.FirstOrDefault( p => p.Code == production.ProductCode);
+            if(product == null)
+            {
+                throw new Exception("Not Found Product With THis Code");
+            }
+
+            product.Quantity += production.Amount;
+            
+            _context.Update(product);
             _context.SaveChanges();
             return Ok(newProduction);
         }

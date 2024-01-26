@@ -6,7 +6,6 @@ namespace controle_estoque.Data;
 public class AppDbContext : DbContext
 {
     public DbSet<Product> Products { get; set; }
-    public DbSet<Recipe> Recipes { get; set; }
     public DbSet<Production> Productions {get; set; }
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

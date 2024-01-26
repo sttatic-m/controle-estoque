@@ -50,7 +50,7 @@ public class ProductController : ControllerBase
             var lastProduct = _context.Products.OrderByDescending(p => p.Id).FirstOrDefault();
             
             if (lastProduct != null) code = lastProduct.Code++;
-            Product newProduct = new Product(Guid.NewGuid(), code, product.Name, product.Ingredient, product.ValidityTime, DateTime.Now);
+            Product newProduct = new Product(Guid.NewGuid(), code, product.Name, product.ValidityTime, DateTime.Now);
             _context.Products.Add(newProduct);
             _context.SaveChanges();
 
@@ -72,7 +72,6 @@ public class ProductController : ControllerBase
             {
                 product.Name = newProduct.Name;
                 product.ValidityTime = newProduct.ValidityTime;
-                product.Ingredient = newProduct.Ingredient;
                 
                 _context.Update(product);
             }
