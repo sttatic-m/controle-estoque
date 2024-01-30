@@ -2,6 +2,7 @@ using System.Globalization;
 using controle_estoque.Data;
 using controle_estoque.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SQLitePCL;
 
 namespace controle_estoque.Controllers;
@@ -22,69 +23,31 @@ public class ProductionController : ControllerBase
     {
         try
         {
-            var productionList = _context.Productions.ToList();
-            if (productionList != null && productionList.Any()) return Ok(productionList);
-            else return NotFound("Not Found Any Production");
+            return Ok(_context.Productions.ToList());
         }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
-    }
-
-    [HttpGet("{index}", Name = "FindDateProductions")]
-    public ActionResult FindDateProductions(string index)
-    {
-        try
-        {
-            if (DateTime.TryParseExact(index, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
-            {
-                var productions = _context.Productions.Where(prod => prod.ProductionDate.Date == date.Date).ToList();
-                if (productions != null)
-                {
-                    return Ok(productions);
-                }
-
-                throw new Exception("Not Found");
-            }
-
-            var productionsByProductCode = _context.Productions.Where(prod => prod.ProductCode == int.Parse(index)).ToList();
-            if(productionsByProductCode != null)
-            {
-                return Ok(productionsByProductCode);
-            }
-
-            throw new Exception("Not Found");
-        }
-        catch (Exception e)
+        catch(Exception e)
         {
             return BadRequest(e.Message);
         }
     }
 
     [HttpPost(Name = "AddProduction")]
-    public ActionResult AddProduction([FromBody] Production production)
+    public async Task<IActionResult> AddProduction([FromBody] Production prod)
     {
-        int prodCode = 0;
         try
         {
-            var lastProduction = _context.Productions.OrderByDescending(p => p.Id).FirstOrDefault();
-            if (lastProduction != null) prodCode = lastProduction.Code++;
+            var lastProduction = _context.Productions.OrderByDescending(p => p.Id).FirstOrDefault() ?? prod;
+            int code = lastProduction.Code <= 0 ? 0 : lastProduction.Code;
 
-            var newProduction = new Production(Guid.NewGuid(), prodCode, production.Amount, production.AmountRecipes, DateTime.Now, production.ProductCode, production.RecipeCode);
-            _context.Productions.Add(newProduction);
-
-            var product = _context.Products.FirstOrDefault( p => p.Code == production.ProductCode);
-            if(product == null)
-            {
-                throw new Exception("Not Found Product With THis Code");
-            }
-
-            product.Quantity += production.Amount;
+            Production production = new (Guid.NewGuid(), ++code, prod.Product, prod.Amount, prod.AmountRecipes, prod.ProductionDate, prod.RecipeCode, prod.StepProducts, prod.Type);
             
-            _context.Update(product);
+            Product? product = _context.Products.FirstOrDefault(p => p.Code == prod.Product) ?? throw new Exception("You need choose a product to create a new production!");
+            product.Quantity += prod.Amount;
+            await _context.Productions.AddAsync(production);
+            _context.Products.Update(product);
             _context.SaveChanges();
-            return Ok(newProduction);
+
+            return Ok(production);
         }
         catch (Exception e)
         {
@@ -92,24 +55,28 @@ public class ProductionController : ControllerBase
         }
     }
 
-    [HttpPut("{code}", Name = "EditProduction")]
-    public ActionResult EditProduction(int code, [FromBody] Production newProduction)
+    [HttpPut("code", Name = "EditProduction")]
+    public async Task<IActionResult> EditProduction(int code, [FromBody] Production body)
     {
         try
         {
-            var production = _context.Productions.FirstOrDefault(product => product.Code == code);
-            if (production != null)
-            {
-                production.Amount = newProduction.Amount;
-                production.RecipeCode = newProduction.RecipeCode;
-                production.AmountRecipes = newProduction.AmountRecipes;
-                production.ProductCode = newProduction.ProductCode;
-                production.ProductionDate = newProduction.ProductionDate;
+            Production production = await _context.Productions.FirstOrDefaultAsync(p => p.Code == code) ?? throw new Exception("Production Missing");
+            
+            Product product = await _context.Products.FirstOrDefaultAsync(p => p.Code == production.Product) ?? throw new Exception("Failed to Find Product");
 
-                _context.Update(production);
-            }
+            product.Quantity -= production.Amount;
+            product.Quantity += body.Amount;
 
-            _context.SaveChanges();
+            production.Amount = body.Amount;
+            production.RecipeCode = body.RecipeCode;
+            production.AmountRecipes = body.AmountRecipes;
+            production.Product = body.Product;
+            production.StepProducts = body.StepProducts;
+            production.ProductionDate = body.ProductionDate;
+            production.Type = body.Type;
+
+            _context.Productions.Update(production);
+            await _context.SaveChangesAsync();
             return Ok(production);
         }
         catch (Exception e)
@@ -119,24 +86,47 @@ public class ProductionController : ControllerBase
     }
 
     [HttpDelete("{code}", Name = "DeleteProduction")]
-    public ActionResult DeleteProduction(int code)
+    public async Task<IActionResult> DeleteProduction(int code)
     {
         try
         {
-            var production = _context.Productions.FirstOrDefault(prod => prod.Code == code);
-            if(production != null)
-            {
-                _context.Productions.Remove(production);
-                _context.SaveChanges();
+            Production production = await _context.Productions.FirstOrDefaultAsync(p => p.Code == code) ?? throw new Exception("Failed to find this production");
+            Product product = await _context.Products.FirstOrDefaultAsync(p => p.Code == production.Product) ?? throw new Exception("This Production hasn't any product");
 
-                return Ok($"Delete {code} Production");
-            }
+            product.Quantity -= production.Amount;
 
-            throw new Exception("Failed to Find Production");
+            _context.Productions.Remove(production);
+            await _context.SaveChangesAsync();
+
+            return Ok($"The production: {production.Code} - {product.Name}");
         }
         catch (Exception e)
         {
             return BadRequest(e.Message);
         }
     }
+    
+    [HttpGet("/FindAll/{index}", Name = "FindAllProductions")]
+    public async Task<IActionResult> FindAllProductions(string index)
+    {
+        try
+        {
+            if(DateTime.TryParseExact(index, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
+            {
+                var productions = _context.Productions.Select(p => p.ProductionDate == date).OrderByDescending(p => p.Id).ToList();
+            }
+            
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    /*[HttpDelete("/DeleteAll", Name = "DeleteAll")]
+    public ActionResult DeleteAll()
+    {
+        _context.Productions.ExecuteDelete();
+        _context.Products.ExecuteDelete();
+        return Ok("DB Cleaned");
+    }*/
 }

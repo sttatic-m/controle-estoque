@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using controle_estoque.Data;
 
@@ -10,9 +11,11 @@ using controle_estoque.Data;
 namespace controle_estoque.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240129141847_UpdateProductionModelToAcceptCodeList")]
+    partial class UpdateProductionModelToAcceptCodeList
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.1");
@@ -62,20 +65,14 @@ namespace controle_estoque.Migrations
                     b.Property<int>("Code")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Product")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("ProductCodes")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("ProductionDate")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("RecipeCode")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("StepProducts")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Type")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");

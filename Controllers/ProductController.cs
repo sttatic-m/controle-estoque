@@ -44,13 +44,14 @@ public class ProductController : ControllerBase
     [HttpPost(Name = "AddProduct")]
     public ActionResult AddProduct([FromBody] Product product)
     {
-        int code = 0;
+
         try
         {
-            var lastProduct = _context.Products.OrderByDescending(p => p.Id).FirstOrDefault();
-            
-            if (lastProduct != null) code = lastProduct.Code++;
-            Product newProduct = new Product(Guid.NewGuid(), code, product.Name, product.ValidityTime, DateTime.Now);
+            var lastProduct = _context.Products.OrderByDescending(p => p.Id).FirstOrDefault() ?? product;
+            int code = lastProduct.Code <= 0 ? 0 : lastProduct.Code;
+
+            Product newProduct = new (Guid.NewGuid(), ++code, product.Name, product.ValidityTime, DateTime.Now);
+            newProduct.MeasureType = product.MeasureType;
             _context.Products.Add(newProduct);
             _context.SaveChanges();
 
