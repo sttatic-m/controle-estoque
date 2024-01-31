@@ -106,22 +106,53 @@ public class ProductionController : ControllerBase
         }
     }
     
-    [HttpGet("/FindAll/{index}", Name = "FindAllProductions")]
-    public async Task<IActionResult> FindAllProductions(string index)
+    [HttpGet("{index}", Name = "GetOneProduction")]
+    public async Task<IActionResult> GetOneProduction(int index)
     {
         try
         {
-            if(DateTime.TryParseExact(index, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
+            var production = await _context.Productions.FirstOrDefaultAsync(p => p.Code == index) ?? throw new ArgumentNullException($"Production: {index} - Not Found!");
+            string[] prodCodes = production.StepProducts.Split(";");
+            List<Product> stepProducts = [];
+            foreach (string code in prodCodes)
             {
-                var productions = _context.Productions.Select(p => p.ProductionDate == date).OrderByDescending(p => p.Id).ToList();
+                if (int.TryParse(code, out int cd)){
+                    var prod = _context.Products.FirstOrDefault(p => p.Code == cd) ?? throw new ArgumentNullException($"Product with {code} can't be null");
+                    stepProducts.Add(prod);
+                }
             }
-            
+
+            return Ok(new {production, stepProducts});
         }
         catch (Exception e)
         {
             return BadRequest(e.Message);
         }
     }
+
+    [HttpGet("/Find/{index}", Name = "FindAllProductions")]
+    public IActionResult FindAllProductions(string index)
+    {
+        try
+        {
+            if(DateTime.TryParseExact(index, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
+            {
+                var productions = _context.Productions.Where(p => p.ProductionDate.Date == date).OrderBy(p => p.Code);
+                return Ok(productions.ToList());
+            }
+            
+            int code = int.Parse(index);
+            if(code <= 0) throw new ArgumentNullException(index);
+
+            var prods = _context.Productions.Where(p => p.Product == code).OrderBy(p => p.ProductionDate);
+            return Ok(prods.ToList());
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
     /*[HttpDelete("/DeleteAll", Name = "DeleteAll")]
     public ActionResult DeleteAll()
     {
